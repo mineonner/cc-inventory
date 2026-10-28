@@ -1,0 +1,7 @@
+{
+  "name": "cc-inventory",
+  "version": "0.1.0",
+  "description": "เปิดหน้าเว็บดู Extension ทั้งหมดในเครื่อง (Plugin, Skill, Subagent, Hook, MCP ...) พร้อมคำอธิบาย ปิด/ลบ/ติดตั้ง และตรวจตัวที่ทำงานทับกัน",
+  "license": "MIT",
+  "keywords": ["inventory", "skills", "mcp", "hooks", "overlap"]
+}

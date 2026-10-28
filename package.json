@@ -1,0 +1,13 @@
+{
+  "name": "cc-inventory",
+  "version": "0.1.0",
+  "description": "See, explain, disable and install every Claude Code extension on this machine, and spot overlapping ones.",
+  "type": "module",
+  "private": true,
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node server/start.js",
+    "test": "node --test test/"
+  },
+  "license": "MIT"
+}

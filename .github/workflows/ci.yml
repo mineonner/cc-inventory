@@ -1,0 +1,27 @@
+name: ci
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: [20, 22]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: node --test test/
+      # Server must start, write its lockfile and stop on its own (no Claude Code needed).
+      - name: smoke-start
+        shell: bash
+        env:
+          CLAUDE_CONFIG_DIR: ${{ runner.temp }}/claude
+          CC_INVENTORY_NO_OPEN: '1'
+        run: |
+          node server/start.js
+          node -e "const l=require(process.env.CLAUDE_CONFIG_DIR+'/cc-inventory/server.json');fetch('http://127.0.0.1:'+l.port+'/api/state?project=none',{headers:{'x-token':l.token}}).then(r=>r.json()).then(j=>{if(!Array.isArray(j.extensions))throw new Error(JSON.stringify(j));console.log('extensions',j.extensions.length);process.kill(l.pid)})"

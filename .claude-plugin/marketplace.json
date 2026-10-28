@@ -1,0 +1,11 @@
+{
+  "name": "cc-inventory",
+  "owner": { "name": "mineonner" },
+  "plugins": [
+    {
+      "name": "cc-inventory",
+      "source": "./",
+      "description": "เปิดหน้าเว็บดู Extension ทั้งหมดในเครื่อง พร้อมคำอธิบาย ปิด/ลบ/ติดตั้ง และตรวจตัวที่ทำงานทับกัน"
+    }
+  ]
+}

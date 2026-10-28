@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cc-inventory</title>
+<style>
+:root{--bg:#f7f6f2;--surface:#fff;--surface-1:#f1efe8;--text:#1f1e1b;--text-2:#5f5e5a;--muted:#888780;--border:#e3e1d8;--border-strong:#c9c6bb;
+--accent:#185fa5;--accent-bg:#e6f1fb;--warn:#854f0b;--warn-bg:#faeeda;--danger:#a32d2d;--danger-bg:#fcebeb;--ok:#3b6d11;--ok-bg:#eaf3de;--radius:8px;
+font-family:system-ui,-apple-system,"Segoe UI","Noto Sans Thai","Sarabun",sans-serif;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#1a1a18;--surface:#232321;--surface-1:#2c2c2a;--text:#ecebe6;--text-2:#b4b2a9;--muted:#888780;--border:#3a3a37;--border-strong:#55554f;
+--accent:#85b7eb;--accent-bg:#0c2a4a;--warn:#fac775;--warn-bg:#412402;--danger:#f09595;--danger-bg:#501313;--ok:#97c459;--ok-bg:#173404;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-size:14px;line-height:1.55}
+main{max-width:1180px;margin:0 auto;padding:16px}
+button,select,input{font:inherit;color:inherit}
+button{background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius);padding:5px 11px;cursor:pointer}
+button:hover{background:var(--surface-1)}button.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+button.danger{color:var(--danger)}button:disabled{opacity:.5;cursor:default}
+input,select{background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius);padding:5px 9px;height:32px}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px}
+pre{white-space:pre-wrap;word-break:break-word;background:var(--surface-1);border-radius:var(--radius);padding:10px;max-height:420px;overflow:auto;margin:6px 0}
+.top{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.top h1{font-size:18px;font-weight:600;margin:0 auto 0 0}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.card{background:var(--surface-1);border-radius:var(--radius);padding:10px 12px}.card .l{font-size:12px;color:var(--text-2)}.card .v{font-size:22px;font-weight:600}
+.progress{display:flex;gap:10px;align-items:center;font-size:12.5px;color:var(--text-2);margin-bottom:10px;min-height:28px}
+.bar{flex:1;height:6px;background:var(--surface-1);border-radius:3px;overflow:hidden}.bar>div{height:100%;background:var(--accent)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.tab{border:1px solid var(--border);border-radius:var(--radius);padding:4px 11px;cursor:pointer;background:var(--surface);font-size:13px}
+.tab.on{background:var(--accent-bg);color:var(--accent);border-color:var(--accent)}
+.catdesc{font-size:13px;color:var(--text-2);background:var(--surface-1);border-radius:var(--radius);padding:9px 12px;margin-bottom:10px}
+.filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px;font-size:12.5px;color:var(--text-2)}
+.split{display:grid;grid-template-columns:minmax(260px,340px) minmax(0,1fr);border:1px solid var(--border);border-radius:12px;background:var(--surface);overflow:hidden;min-height:480px}
+.list{border-right:1px solid var(--border);max-height:72vh;overflow:auto}
+.row{display:flex;gap:6px;align-items:center;padding:8px 11px;border-bottom:1px solid var(--border);cursor:pointer;font-size:13px}
+.row:hover,.row.sel{background:var(--surface-1)}.row .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row.dim .n{color:var(--muted)}
+.detail{padding:14px 18px;max-height:72vh;overflow:auto}
+.b{font-size:11px;padding:1px 7px;border-radius:4px;white-space:nowrap;display:inline-block}
+.b.warn{background:var(--warn-bg);color:var(--warn)}.b.mut{background:var(--surface-1);color:var(--text-2)}.b.dang{background:var(--danger-bg);color:var(--danger)}
+.b.ok{background:var(--ok-bg);color:var(--ok)}.b.acc{background:var(--accent-bg);color:var(--accent)}
+.sec{font-size:12px;color:var(--text-2);margin:14px 0 3px;display:flex;gap:6px;align-items:center}
+.p{margin:0}.p.muted{color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;padding-top:12px;border-top:1px solid var(--border)}
+.note{font-size:12.5px;color:var(--text-2);background:var(--surface-1);border-radius:var(--radius);padding:8px 10px;margin-top:12px}
+.group{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.member{display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}.member:last-child{border-bottom:0}
+.member .n{flex:1;min-width:0}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+label.f{display:block;font-size:12px;color:var(--text-2);margin:12px 0 4px}
+.prow{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}.prow .n{flex:1;min-width:0}
+.cmd{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;background:var(--surface-1);border-radius:var(--radius);padding:8px 10px;margin-top:12px;color:var(--text-2);word-break:break-all}
+.toast{position:fixed;right:16px;bottom:16px;max-width:460px;background:var(--text);color:var(--bg);padding:10px 14px;border-radius:var(--radius);font-size:13px;white-space:pre-wrap;display:none;z-index:9}
+.toast.err{background:var(--danger)}
+.empty{padding:30px;text-align:center;color:var(--muted)}
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:2px 12px;font-size:12.5px;color:var(--text-2)}
+@media (max-width:760px){.split{grid-template-columns:1fr}.list{border-right:0;border-bottom:1px solid var(--border);max-height:40vh}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <h1>cc-inventory</h1>
+    <select id="project" aria-label="โปรเจกต์"></select>
+    <input id="search" placeholder="ค้นหาชื่อหรือคำอธิบาย" aria-label="ค้นหา" style="width:220px">
+    <button id="refresh" title="สแกนใหม่">รีเฟรช</button>
+  </div>
+  <div class="cards" id="cards"></div>
+  <div class="progress" id="progress"></div>
+  <div class="tabs" id="tabs" role="tablist"></div>
+  <div class="catdesc" id="catdesc"></div>
+  <div id="view"></div>
+</main>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const TOKEN = new URLSearchParams(location.search).get('t');
+const KINDS = {
+  plugin: ['Plugin', 'Plugin คือ "กล่อง" ที่บรรจุ Skill, Subagent, Command, Hook และ MCP ไว้ด้วยกัน ติดตั้งจาก marketplace — ปิดหรือลบได้เฉพาะทั้งกล่อง ส่วนประกอบข้างในปิดแยกไม่ได้'],
+  skill: ['Skill', 'Skill คือชุดคำสั่ง (SKILL.md) ที่ถูกโหลดเข้า context เดียวกับแชต — เรียกด้วย /ชื่อ หรือ Claude เลือกใช้เองเมื่อคำขอตรงกับ description ของมัน ดังนั้น description ที่คล้ายกันทำให้ Claude เลือกสลับไปมาได้'],
+  agent: ['Subagent', 'Subagent คือ Claude อีกตัวที่ทำงานใน context แยก มี system prompt และ tools ของตัวเอง ทำงานเสร็จแล้วส่งผลสรุปกลับมา — เหมาะกับงานค้นกว้างหรือรีวิวที่ไม่อยากให้แชตหลักรก ต่างจาก Skill ที่ทำงานใน context เดียวกัน'],
+  command: ['Command', 'Command คือ slash command แบบเก่า (.md ในโฟลเดอร์ commands) — ทำงานเมื่อพิมพ์ /ชื่อ เท่านั้น ปัจจุบัน Skill ทำหน้าที่นี้ได้เหมือนกัน'],
+  hook: ['Hook', 'Hook คือคำสั่ง shell ที่ระบบรันเองตาม event (เช่น เริ่ม session, ก่อน/หลังใช้ tool, ส่งข้อความ) — ไม่ใช่ AI ตัดสินใจเรียก ทำงานทุกครั้งที่ event เกิด จึงกระทบทุก session'],
+  mcp: ['MCP', 'MCP server คือโปรแกรมภายนอกที่เพิ่ม tool ใหม่ให้ Claude เรียกใช้ (เช่น ควบคุมเบราว์เซอร์ อ่านฐานข้อมูล) — stdio รันในเครื่อง, http/sse ส่งข้อมูลไปเครื่องอื่น'],
+  statusline: ['Status line', 'Status line คือคำสั่งที่สร้างแถบสถานะด้านล่าง Claude Code CLI — ระบบรันซ้ำทุกครั้งที่หน้าจออัปเดต'],
+  outputstyle: ['Output style', 'Output style คือชุดคำสั่งที่เปลี่ยนสไตล์การตอบของ Claude ทั้ง session — เลือกได้ทีละแบบ'],
+  overlap: ['Overlap', 'Overlap คือกลุ่ม Extension ที่ชื่อหรือคำอธิบายคล้ายกันจน Claude อาจเลือกใช้สลับไปมา — ตัวเลข "ใช้ n ครั้ง" มาจากสถิติจริงใน ~/.claude.json ระบบไม่ปิดอะไรให้อัตโนมัติ'],
+  install: ['ติดตั้ง', 'ติดตั้ง Plugin จาก marketplace, MCP server จากฟอร์ม หรือ Skill จาก git repo / โฟลเดอร์ — ระบบตรวจชื่อซ้ำและ Overlap ให้ก่อนติดตั้ง'],
+};
+const SCOPE_TH = { user: 'user', project: 'project', local: 'local', plugin: 'plugin', synced: 'claude.ai', builtin: 'built-in' };
+const STATUS = { active: ['ok', 'Active'], disabled: ['mut', 'Disabled'], ignored: ['dang', 'Ignored'] };
+
+let S = null, tab = 'skill', selId = null, statusFilter = 'all', installTab = 'plugin', project = new URLSearchParams(location.search).get('project') || '';
+const judged = {};
+let sourceOpen = null;
+
+const $ = (id) => document.getElementById(id);
+// Replace markup only when it changed, so background refreshes never swap an element under the cursor.
+function setHTML(el, html) { if (el._html === html) return false; el._html = html; el.innerHTML = html; return true; }
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+async function api(method, path, body) {
+  const res = await fetch(path, { method, headers: { 'x-token': TOKEN, 'content-type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || res.statusText);
+  return data;
+}
+function toast(msg, err) { const t = $('toast'); t.textContent = msg; t.className = 'toast' + (err ? ' err' : ''); t.style.display = 'block'; clearTimeout(toast.t); toast.t = setTimeout(() => (t.style.display = 'none'), err ? 9000 : 4500); }
+
+async function load() {
+  try {
+    S = await api('GET', '/api/state?project=' + encodeURIComponent(project || 'none'));
+    render();
+  } catch (e) { toast(e.message, true); }
+}
+
+function byId(id) { return S.extensions.find((e) => e.id === id); }
+function visible(kind) {
+  const q = $('search').value.trim().toLowerCase();
+  return S.extensions.filter((e) => e.kind === kind && (statusFilter === 'all' || e.status === statusFilter) && (!q || (e.name + ' ' + e.description).toLowerCase().includes(q)))
+    .sort((a, b) => (a.status === 'active' ? 0 : 1) - (b.status === 'active' ? 0 : 1) || order(a.scope) - order(b.scope) || a.name.localeCompare(b.name));
+}
+const order = (s) => ['project', 'local', 'user', 'plugin', 'synced', 'builtin'].indexOf(s);
+
+function render() {
+  renderProject(); renderCards(); renderProgress(); renderTabs();
+  $('catdesc').textContent = KINDS[tab][1];
+  if (tab === 'overlap') renderOverlap(); else if (tab === 'install') renderInstall(); else renderList();
+}
+
+function renderProject() {
+  const sel = $('project');
+  const opts = [['none', 'เฉพาะ user (ไม่รวมโปรเจกต์)'], ...[...new Set([S.meta.startProject, ...S.meta.projects].filter(Boolean))].map((p) => [p, 'user + ' + p.split(/[\\/]/).pop()])];
+  sel.innerHTML = opts.map(([v, l]) => `<option value="${esc(v)}" ${v === (S.meta.projectDir || 'none') ? 'selected' : ''} title="${esc(v)}">${esc(l)}</option>`).join('');
+}
+function renderCards() {
+  const ex = S.extensions;
+  const done = ex.filter((e) => e.explanation).length;
+  const cards = [['Extension ทั้งหมด', ex.length, ''], ['เปิดใช้อยู่', ex.filter((e) => e.status === 'active').length, ''], ['กลุ่ม Overlap', S.overlaps.length, 'color:var(--warn)'], ['Ignored (ไม่ถูกโหลด)', ex.filter((e) => e.status === 'ignored').length, 'color:var(--danger)']];
+  setHTML($('cards'), cards.map(([l, v, st]) => `<div class="card"><div class="l">${l}</div><div class="v" style="${st}">${v}</div></div>`).join(''));
+}
+function renderProgress() {
+  const ex = S.extensions, done = ex.filter((e) => e.explanation).length, p = S.progress;
+  const busy = p.queued + p.running;
+  if (!$('ptext')) $('progress').innerHTML = '<span id="ptext"></span><div class="bar"><div id="pbar"></div></div><span id="pbusy"></span><span id="pbtn"></span>';
+  $('ptext').textContent = `คำอธิบายโดย Claude ${done}/${ex.length}${p.errors ? ` · ผิดพลาด ${p.errors}` : ''}`;
+  $('pbar').style.width = Math.round((done / Math.max(1, ex.length)) * 100) + '%';
+  $('pbusy').textContent = busy ? `กำลังสร้าง ${busy} รายการ` : '';
+  // Buttons only change when the queue starts/stops, so they stay clickable during refreshes.
+  if (!setHTML($('pbtn'), busy ? '<button id="stopEx">หยุด</button>' : done < ex.length ? '<button id="startEx">สร้างคำอธิบายที่เหลือ</button>' : '')) return;
+  $('stopEx')?.addEventListener('click', async () => { S.progress = await api('POST', '/api/explain/stop'); renderProgress(); });
+  $('startEx')?.addEventListener('click', async () => { S.progress = await api('POST', '/api/explain', { project: project || 'none' }); renderProgress(); });
+}
+function renderTabs() {
+  const count = (k) => S.extensions.filter((e) => e.kind === k).length;
+  const keys = Object.keys(KINDS).filter((k) => k === 'overlap' || k === 'install' || count(k));
+  if (!setHTML($('tabs'), keys.map((k) => `<span class="tab ${k === tab ? 'on' : ''}" role="tab" tabindex="0" data-k="${k}">${KINDS[k][0]}${k === 'install' ? '' : ' ' + (k === 'overlap' ? S.overlaps.length : count(k))}</span>`).join(''))) return;
+  $('tabs').querySelectorAll('.tab').forEach((t) => {
+    const go = () => { tab = t.dataset.k; selId = null; sourceOpen = null; render(); };
+    t.onclick = go; t.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } };
+  });
+}
+
+function badges(e) {
+  const out = [];
+  if (e.status !== 'active') out.push(`<span class="b ${STATUS[e.status][0]}">${STATUS[e.status][1]}</span>`);
+  if (e.overlaps.length) out.push('<span class="b warn">Overlap</span>');
+  out.push(`<span class="b mut">${esc(SCOPE_TH[e.scope] || e.scope)}</span>`);
+  return out.join('');
+}
+
+function renderList() {
+  const items = visible(tab);
+  if (!selId || !items.some((e) => e.id === selId)) selId = items[0]?.id || null;
+  const statusChips = ['all', 'active', 'disabled', 'ignored'].map((s) => `<span class="tab ${s === statusFilter ? 'on' : ''}" data-s="${s}" tabindex="0">${s === 'all' ? 'ทั้งหมด' : STATUS[s][1]}</span>`).join('');
+  $('view').innerHTML = `<div class="filters">สถานะ: ${statusChips}</div>
+    <div class="split"><div class="list" id="list">${items.length ? items.map((e) => `<div class="row ${e.id === selId ? 'sel' : ''} ${e.status !== 'active' ? 'dim' : ''}" data-id="${esc(e.id)}" tabindex="0"><span class="n" title="${esc(e.name)}">${esc(e.name)}</span>${badges(e)}</div>`).join('') : '<div class="empty">ไม่มีรายการ</div>'}</div>
+    <div class="detail" id="detail"></div></div>`;
+  $('view').querySelectorAll('[data-s]').forEach((c) => (c.onclick = () => { statusFilter = c.dataset.s; renderList(); }));
+  $('list').querySelectorAll('.row').forEach((r) => {
+    const go = () => { selId = r.dataset.id; sourceOpen = null; renderList(); };
+    r.onclick = go; r.onkeydown = (e) => { if (e.key === 'Enter') go(); };
+  });
+  renderDetail();
+}
+
+function renderDetail() {
+  const el = $('detail');
+  const e = selId && byId(selId);
+  if (!e) { setHTML(el, '<div class="empty">เลือกรายการทางซ้าย</div>'); return; }
+  const x = e.explanation;
+  const fromClaude = '<span class="b acc">สรุปโดย Claude</span>';
+  const fromFile = '<span class="b mut">จากไฟล์</span>';
+  const pending = e.explainStatus === 'running' || e.explainStatus === 'queued' ? 'กำลังให้ Claude สรุป…' : e.explainStatus === 'error' ? 'สร้างคำอธิบายไม่สำเร็จ: ' + (e.explainError || '') : 'ยังไม่มีคำอธิบาย — กด "สร้างคำอธิบาย"';
+  const claudeField = (v) => x ? `<p class="p">${esc(v || 'ไม่ระบุในไฟล์')}</p>` : `<p class="p muted">${esc(pending)}</p>`;
+  const groups = S.overlaps.filter((g) => e.overlaps.includes(g.id));
+  const neighbours = [...new Set(groups.flatMap((g) => g.members))].filter((id) => id !== e.id).map(byId).filter(Boolean);
+  const f = e.facts || {};
+  const facts = [];
+  if (e.path) facts.push(['ไฟล์', `<code>${esc(e.path)}</code>`]);
+  if (f.linkTarget) facts.push(['ลิงก์ไปที่', `<code>${esc(f.linkTarget)}</code>`]);
+  if (e.pluginId) facts.push(['อยู่ใน Plugin', esc(e.pluginId.replace(/^plugin:/, ''))]);
+  if (f.version) facts.push(['เวอร์ชัน', esc(f.version)]);
+  if (f.tools) facts.push(['tools', esc(f.tools.join(', '))]);
+  if (f.model) facts.push(['model', esc(f.model)]);
+  if (f.event) facts.push(['event', esc(f.event + (f.matcher ? ' · matcher: ' + f.matcher : ''))]);
+  if (f.command && e.kind !== 'mcp') facts.push(['คำสั่ง', `<code>${esc(f.command)}</code>`]);
+  if (e.kind === 'mcp') facts.push(['เชื่อมต่อ', `<code>${esc(f.type === 'stdio' ? [f.command, ...(f.args || [])].join(' ') : f.url)}</code>`]);
+  if (f.envKeys?.length) facts.push(['env', esc(f.envKeys.join(', ')) + ' <span class="b mut">ค่าถูกซ่อน</span>']);
+  if (e.usage) facts.push(['ใช้แล้ว', `${e.usage.count} ครั้ง${e.usage.lastUsedAt ? ' · ล่าสุด ' + new Date(e.usage.lastUsedAt).toLocaleDateString('th-TH') : ''}`]);
+  const children = e.kind === 'plugin' ? S.extensions.filter((c) => c.pluginId === e.id) : [];
+
+  const changed = setHTML(el, `
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span style="font-weight:600;font-size:16px;word-break:break-all">${esc(e.name)}</span>
+      <span class="b ${STATUS[e.status][0]}">${STATUS[e.status][1]}</span><span class="b mut">${esc(KINDS[e.kind][0])} · ${esc(SCOPE_TH[e.scope] || e.scope)}</span></div>
+    <div class="sec">คืออะไร ${x ? fromClaude : ''}</div>${x ? claudeField(x.what) : `<p class="p">${esc(e.description || '—')}</p><p class="p muted" style="font-size:12.5px">${esc(pending)}</p>`}
+    <div class="sec">ทำหน้าที่อะไร ${fromClaude}</div>${claudeField(x?.does)}
+    <div class="sec">ใช้ยังไง ${fromFile}</div><p class="p">${esc(e.howto.trigger)}</p>
+    ${x?.example ? `<p class="p" style="color:var(--text-2)">ตัวอย่าง ${fromClaude.replace('สรุปโดย Claude', 'Claude')}: “${esc(x.example)}”</p>` : ''}
+    <div class="sec">ทำงานยังไง ${fromClaude}</div>${claudeField(x?.how)}
+    ${neighbours.length ? `<div class="sec">ทับกับ ${fromFile}</div><p class="p">${neighbours.map((n) => `<span class="b warn" style="margin:0 4px 4px 0;cursor:pointer" data-jump="${esc(n.id)}">${esc(n.name)}${n.usage ? ' · ใช้ ' + n.usage.count : ''}</span>`).join('')}</p>` : ''}
+    ${e.warnings.length ? `<div class="sec">ข้อควรระวัง ${fromFile}</div><p class="p">${e.warnings.map((w) => `<span class="b dang" style="margin:0 4px 4px 0;white-space:normal">${esc(w)}</span>`).join('')}</p>` : ''}
+    ${children.length ? `<div class="sec">ส่วนประกอบ (${children.length})</div><p class="p">${children.map((c) => `<span class="b mut" style="margin:0 4px 4px 0;cursor:pointer" data-jump="${esc(c.id)}">${esc(KINDS[c.kind][0])}: ${esc(c.name)}</span>`).join('')}</p>` : ''}
+    <div class="sec">รายละเอียด</div><div class="kv">${facts.map(([k, v]) => `<span>${k}</span><span style="word-break:break-all">${v}</span>`).join('')}</div>
+    ${e.readOnly ? `<div class="note">${esc(e.readOnlyReason || 'แก้ไขไม่ได้')}</div>` : ''}
+    <div class="actions">
+      ${!e.readOnly && !('brokenLink' in f) && e.status === 'active' ? '<button data-act="disable">ปิด</button>' : ''}
+      ${!e.readOnly && !('brokenLink' in f) && e.status === 'disabled' ? '<button data-act="enable">เปิดใช้</button>' : ''}
+      ${e.path || e.kind === 'hook' || e.kind === 'mcp' ? `<button id="src">${sourceOpen === e.id ? 'ซ่อนต้นฉบับ' : 'ดูต้นฉบับ'}</button>` : ''}
+      <button id="regen">${x ? 'สร้างคำอธิบายใหม่' : 'สร้างคำอธิบาย'}</button>
+      ${!e.readOnly ? `<button class="danger" data-act="delete" style="margin-left:auto">${e.kind === 'plugin' ? 'ถอนการติดตั้ง' : 'ลบ'}</button>` : ''}
+    </div>
+    <div id="srcbox"></div>`);
+  if (!changed) return;
+  el.querySelectorAll('[data-jump]').forEach((j) => (j.onclick = () => { const t = byId(j.dataset.jump); tab = t.kind; selId = t.id; statusFilter = 'all'; render(); }));
+  el.querySelectorAll('[data-act]').forEach((b) => (b.onclick = () => act(e, b.dataset.act)));
+  $('regen').onclick = async () => {
+    try { S.progress = await api('POST', '/api/explain', { id: e.id, force: true, project: project || 'none' }); } catch (err) { return toast(err.message, true); }
+    e.explainStatus = 'queued'; renderProgress(); renderDetail();
+    toast('ส่งให้ Claude สรุปแล้ว — รอสักครู่'); poll();
+  };
+  const src = $('src');
+  if (src) src.onclick = () => { sourceOpen = sourceOpen === e.id ? null : e.id; renderDetail(); };
+  if (sourceOpen === e.id) api('GET', `/api/source?id=${encodeURIComponent(e.id)}&project=${encodeURIComponent(project || 'none')}`).then((r) => { $('srcbox').innerHTML = `<pre>${esc(r.text)}</pre>`; }).catch((err) => toast(err.message, true));
+}
+
+async function act(e, action) {
+  if (action === 'delete') {
+    const msg = e.kind === 'plugin' ? `ถอนการติดตั้ง ${e.name}?\nส่วนประกอบทั้งหมดใน plugin จะหายไป` : `ลบ ${e.name} ถาวร?\nระบบสำรองไฟล์ไว้ใน ~/.claude/cc-inventory/backups ก่อนลบ\nถ้าแค่ไม่อยากใช้ชั่วคราว ให้กด "ปิด" แทน`;
+    if (!confirm(msg)) return;
+  }
+  try {
+    const r = await api('POST', '/api/action', { id: e.id, action, project: project || 'none' });
+    toast(r.message + '\nมีผลกับ session ใหม่ของ Claude Code (session ที่เปิดอยู่อาจต้องเริ่มใหม่)');
+    await load();
+  } catch (err) { toast(err.message, true); }
+}
+
+function renderOverlap() {
+  if (!S.overlaps.length) { $('view').innerHTML = '<div class="panel empty">ไม่พบ Extension ที่ทำงานทับกัน</div>'; return; }
+  $('view').innerHTML = S.overlaps.map((g) => {
+    const members = g.members.map(byId).filter(Boolean);
+    const j = judged[g.id];
+    return `<div class="group">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+        <span style="font-weight:600">${g.reason === 'name' ? 'ชื่อซ้ำกัน' : 'หน้าที่คล้ายกัน'}</span>
+        <span class="b warn">${g.reason === 'name' ? 'ชื่อเดียวกัน' : 'ความคล้าย ' + g.score}</span>
+        <span style="font-size:12.5px;color:var(--text-2)">คำที่ซ้ำ: ${esc(g.terms.join(', '))}</span>
+      </div>
+      ${members.map((m) => `<div class="member"><span class="n"><a href="#" data-jump="${esc(m.id)}" style="color:inherit">${esc(m.name)}</a> <span class="b mut">${esc(KINDS[m.kind][0])} · ${esc(SCOPE_TH[m.scope] || m.scope)}</span><br><span style="font-size:12px;color:var(--text-2)">${esc(m.description.slice(0, 180))}${m.description.length > 180 ? '…' : ''}</span></span>
+        <span style="font-size:12px;color:var(--text-2);white-space:nowrap">${m.usage ? 'ใช้ ' + m.usage.count + ' ครั้ง' : 'ไม่มีสถิติ'}</span>
+        ${m.readOnly ? `<span class="b mut" title="${esc(m.readOnlyReason)}">ปิดแยกไม่ได้</span>` : `<button data-off="${esc(m.id)}">ปิด</button>`}</div>`).join('')}
+      <div style="margin-top:8px"><button data-judge="${esc(g.id)}" ${j === 'loading' ? 'disabled' : ''}>${j === 'loading' ? 'Claude กำลังพิจารณา…' : 'ให้ Claude ตัดสินว่าควรเก็บตัวไหน'}</button></div>
+      ${j && j !== 'loading' ? `<div class="note"><b>${esc(j.verdict)}</b>${j.keep?.length ? ' · แนะนำให้เก็บ: ' + esc([].concat(j.keep).join(', ')) : ''}<br>${esc(j.reason)} <span class="b acc">สรุปโดย Claude</span></div>` : ''}
+    </div>`;
+  }).join('') + '<p style="font-size:12.5px;color:var(--text-2)">Plugin skill ที่ชื่อขึ้นต้นด้วยชื่อ plugin (เช่น superpowers:...) ต้องปิดทั้ง plugin · Skill จาก claude.ai ปิดได้ที่การตั้งค่าบน claude.ai</p>';
+  $('view').querySelectorAll('[data-jump]').forEach((a) => (a.onclick = (ev) => { ev.preventDefault(); const t = byId(a.dataset.jump); tab = t.kind; selId = t.id; statusFilter = 'all'; render(); }));
+  $('view').querySelectorAll('[data-off]').forEach((b) => (b.onclick = () => act(byId(b.dataset.off), 'disable')));
+  $('view').querySelectorAll('[data-judge]').forEach((b) => (b.onclick = async () => {
+    const id = b.dataset.judge;
+    judged[id] = 'loading'; renderOverlap();
+    try { judged[id] = await api('POST', '/api/judge', { groupId: id, project: project || 'none' }); } catch (err) { delete judged[id]; toast(err.message, true); }
+    renderOverlap();
+  }));
+}
+
+// ---------- install ----------
+let catalog = null, skillPv = null;
+function renderInstall() {
+  const sub = { plugin: 'Plugin', mcp: 'MCP server', skill: 'Skill' };
+  $('view').innerHTML = `<div class="tabs">${Object.keys(sub).map((k) => `<span class="tab ${k === installTab ? 'on' : ''}" data-i="${k}" tabindex="0">ติดตั้ง ${sub[k]}</span>`).join('')}</div><div class="panel" id="ipane"></div>`;
+  $('view').querySelectorAll('[data-i]').forEach((t) => (t.onclick = () => { installTab = t.dataset.i; renderInstall(); }));
+  ({ plugin: installPlugin, mcp: installMcp, skill: installSkill })[installTab]();
+}
+
+async function installPlugin() {
+  const pane = $('ipane');
+  pane.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap"><select id="mk"></select><input id="pq" placeholder="ค้นหา plugin" style="flex:1;min-width:160px"><input id="mkadd" placeholder="owner/repo ของ marketplace" style="width:220px"><button id="mkbtn">+ marketplace</button></div><div id="plist"><div class="empty">กำลังโหลดรายการจาก marketplace…</div></div>`;
+  $('mkbtn').onclick = async () => { try { toast((await api('POST', '/api/install/marketplace', { source: $('mkadd').value.trim() })).message); catalog = null; installPlugin(); } catch (e) { toast(e.message, true); } };
+  try { catalog ||= await api('GET', '/api/catalog'); } catch (e) { $('plist').innerHTML = `<div class="empty">${esc(e.message)}</div>`; return; }
+  const markets = [...new Set(catalog.available.map((p) => p.marketplaceName))].sort();
+  $('mk').innerHTML = '<option value="">ทุก marketplace</option>' + markets.map((m) => `<option>${esc(m)}</option>`).join('');
+  const installed = new Set(catalog.installed.map((p) => p.id));
+  const draw = async () => {
+    const q = $('pq').value.trim().toLowerCase(), mk = $('mk').value;
+    const list = catalog.available.filter((p) => (!mk || p.marketplaceName === mk) && (!q || (p.name + ' ' + (p.description || '')).toLowerCase().includes(q)))
+      .sort((a, b) => (b.installCount || 0) - (a.installCount || 0)).slice(0, 30);
+    $('plist').innerHTML = list.length ? list.map((p, i) => `<div class="prow"><span class="n"><b>${esc(p.name)}</b> <span class="b mut">${esc(p.marketplaceName)}</span>${p.installCount ? ` <span style="font-size:12px;color:var(--text-2)">${p.installCount.toLocaleString()} installs</span>` : ''}<br><span style="font-size:12.5px;color:var(--text-2)">${esc((p.description || '').slice(0, 220))}</span><br><span id="ov${i}"></span></span>${installed.has(p.pluginId) ? '<span class="b ok">ติดตั้งแล้ว</span>' : `<button data-pid="${esc(p.pluginId)}">ติดตั้ง</button>`}</div>`).join('') + '<p style="font-size:12px;color:var(--text-2)">แสดง 30 รายการแรก · ติดตั้งผ่าน <code>claude plugin install</code> ที่ scope user</p>' : '<div class="empty">ไม่พบ plugin</div>';
+    $('plist').querySelectorAll('[data-pid]').forEach((b) => (b.onclick = async () => {
+      b.disabled = true; b.textContent = 'กำลังติดตั้ง…';
+      try { toast((await api('POST', '/api/install/plugin', { id: b.dataset.pid, project: project || 'none' })).message); catalog = null; await load(); } catch (e) { toast(e.message, true); b.disabled = false; b.textContent = 'ติดตั้ง'; }
+    }));
+    try {
+      const ov = await api('POST', '/api/overlap/check', { items: list.map((p) => ({ name: p.name, description: p.description })), project: project || 'none' });
+      ov.forEach((o, i) => { const el = $('ov' + i); if (el && o.similar.length) el.innerHTML = `<span class="b warn">${o.sameName ? 'ชื่อซ้ำ/คล้ายกับ' : 'Overlap กับ'} ${esc(o.similar.slice(0, 4).join(', '))}</span>`; });
+    } catch { /* overlap hint is optional */ }
+  };
+  let t; $('pq').oninput = () => { clearTimeout(t); t = setTimeout(draw, 250); }; $('mk').onchange = draw;
+  draw();
+}
+
+function installMcp() {
+  const pane = $('ipane');
+  pane.innerHTML = `
+    <label class="f" for="mn">ชื่อ</label><input id="mn" placeholder="github" style="width:100%">
+    <label class="f" for="mt">ประเภท</label><select id="mt" style="width:100%"><option value="stdio">stdio (รันคำสั่งในเครื่อง)</option><option value="http">http (server ภายนอก)</option><option value="sse">sse (server ภายนอก)</option></select>
+    <div id="mstdio"><label class="f" for="mc">คำสั่ง</label><input id="mc" placeholder="npx -y @modelcontextprotocol/server-github" style="width:100%">
+      <label class="f">Environment variables</label><div id="menv"></div><button id="maddenv" style="margin-top:6px">+ env</button></div>
+    <div id="mhttp" style="display:none"><label class="f" for="mu">URL</label><input id="mu" placeholder="https://mcp.example.com/mcp" style="width:100%">
+      <label class="f">Headers</label><div id="mhdr"></div><button id="maddhdr" style="margin-top:6px">+ header</button></div>
+    <label class="f">Scope</label><div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px">
+      <label><input type="radio" name="ms" value="user" checked> user — ใช้ได้ทุกโปรเจกต์</label>
+      <label><input type="radio" name="ms" value="project" ${project ? '' : 'disabled'}> project — เขียนลง .mcp.json แชร์กับทีมผ่าน git</label>
+      <label><input type="radio" name="ms" value="local" ${project ? '' : 'disabled'}> local — โปรเจกต์นี้ เฉพาะคุณ</label></div>
+    <div class="cmd" id="mprev"></div>
+    <div id="merr" style="color:var(--danger);font-size:13px;margin-top:6px"></div>
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="primary" id="mgo">ติดตั้งและทดสอบเชื่อมต่อ</button></div>
+    <pre id="mout" style="display:none"></pre>`;
+  const kv = (box, kp, vp) => { const d = document.createElement('div'); d.style.cssText = 'display:flex;gap:8px;margin-top:6px'; d.innerHTML = `<input placeholder="${kp}" style="flex:1"><input type="password" placeholder="${vp}" style="flex:2" autocomplete="off"><button aria-label="ลบ">×</button>`; d.querySelector('button').onclick = () => { d.remove(); prev(); }; d.querySelectorAll('input').forEach((i) => (i.oninput = prev)); $(box).appendChild(d); };
+  const pairs = (box) => [...$(box).children].map((d) => { const [k, v] = d.querySelectorAll('input'); return { key: k.value.trim(), value: v.value }; }).filter((x) => x.key);
+  const form = () => ({ name: $('mn').value.trim(), type: $('mt').value, command: $('mc').value.trim(), url: $('mu').value.trim(), env: pairs('menv'), headers: pairs('mhdr'), scope: document.querySelector('input[name=ms]:checked').value, project: project || 'none' });
+  let t;
+  const prev = () => { $('merr').textContent = ''; clearTimeout(t); t = setTimeout(async () => { try { $('mprev').textContent = (await api('POST', '/api/mcp/preview', form())).command; } catch {} }, 200); };
+  $('maddenv').onclick = () => kv('menv', 'API_KEY', 'ค่า (ไม่แสดงกลับ)');
+  $('maddhdr').onclick = () => kv('mhdr', 'Authorization', 'ค่า (ไม่แสดงกลับ)');
+  $('mt').onchange = () => { const s = $('mt').value === 'stdio'; $('mstdio').style.display = s ? '' : 'none'; $('mhttp').style.display = s ? 'none' : ''; prev(); };
+  pane.querySelectorAll('input').forEach((i) => (i.oninput = prev));
+  pane.querySelectorAll('input[type=radio]').forEach((i) => (i.onchange = prev));
+  $('mgo').onclick = async () => {
+    const f = form();
+    if (!f.name) { $('merr').textContent = 'ใส่ชื่อ MCP server'; $('mn').focus(); return; }
+    if (f.type === 'stdio' ? !f.command : !f.url) { $('merr').textContent = f.type === 'stdio' ? 'ใส่คำสั่งที่ใช้รัน' : 'ใส่ URL'; return; }
+    $('mgo').disabled = true; $('mgo').textContent = 'กำลังติดตั้ง…';
+    try { const r = await api('POST', '/api/install/mcp', f); $('mout').style.display = ''; $('mout').textContent = r.message; toast('ติดตั้ง MCP แล้ว'); load(); }
+    catch (e) { $('merr').textContent = e.message; }
+    $('mgo').disabled = false; $('mgo').textContent = 'ติดตั้งและทดสอบเชื่อมต่อ';
+  };
+  prev();
+}
+
+function installSkill() {
+  const pane = $('ipane');
+  pane.innerHTML = `<label class="f" for="ss">git URL หรือ path แบบเต็มของโฟลเดอร์ในเครื่อง</label>
+    <div style="display:flex;gap:8px"><input id="ss" placeholder="https://github.com/owner/skills" style="flex:1"><button id="sgo">ดูรายการ skill</button></div>
+    <div id="serr" style="color:var(--danger);font-size:13px;margin-top:6px"></div><div id="slist"></div>`;
+  $('sgo').onclick = async () => {
+    const source = $('ss').value.trim();
+    if (!source) { $('serr').textContent = 'ใส่ git URL หรือ path ของโฟลเดอร์'; return; }
+    $('serr').textContent = ''; $('slist').innerHTML = '<div class="empty">กำลังอ่าน…</div>';
+    try {
+      skillPv = await api('POST', '/api/skill/preview', { source });
+      const ov = await api('POST', '/api/overlap/check', { items: skillPv.skills, project: project || 'none' }).catch(() => []);
+      $('slist').innerHTML = `<label class="f">พบ ${skillPv.skills.length} skill — เลือกตัวที่จะติดตั้ง</label>` + skillPv.skills.map((s, i) => {
+        const o = ov[i] || { similar: [] };
+        return `<label class="prow" style="cursor:pointer"><input type="checkbox" value="${esc(s.name)}" ${o.sameName ? '' : 'checked'}><span class="n"><b>${esc(s.name)}</b> <span style="font-size:12px;color:var(--text-2)">${esc(s.rel)}</span><br><span style="font-size:12.5px;color:var(--text-2)">${esc(s.description.slice(0, 220))}</span><br>${o.sameName ? `<span class="b dang">ชื่อซ้ำกับ skill ที่มีอยู่ — จะบังตัวเดิม</span>` : o.similar.length ? `<span class="b warn">Overlap กับ ${esc(o.similar.slice(0, 4).join(', '))}</span>` : ''}</span></label>`;
+      }).join('') + `<label class="f" for="sscope">ติดตั้งไปที่</label><select id="sscope"><option value="user">user (~/.claude/skills)</option>${project ? '<option value="project">project (.claude/skills)</option>' : ''}</select>
+        <div style="margin-top:12px"><button class="primary" id="sinst">ติดตั้ง skill ที่เลือก</button></div>`;
+      $('sinst').onclick = async () => {
+        const names = [...$('slist').querySelectorAll('input[type=checkbox]:checked')].map((c) => c.value);
+        if (!names.length) { $('serr').textContent = 'เลือกอย่างน้อย 1 skill'; return; }
+        try { toast((await api('POST', '/api/install/skill', { token: skillPv.token, names, scope: $('sscope').value, project: project || 'none' })).message); $('slist').innerHTML = ''; load(); }
+        catch (e) { $('serr').textContent = e.message; }
+      };
+    } catch (e) { $('slist').innerHTML = ''; $('serr').textContent = e.message; }
+  };
+}
+
+// ---------- wiring ----------
+$('project').onchange = () => { project = $('project').value === 'none' ? '' : $('project').value; selId = null; catalog = null; load(); };
+let st; $('search').oninput = () => { clearTimeout(st); st = setTimeout(() => { if (tab !== 'overlap' && tab !== 'install') renderList(); }, 150); };
+$('refresh').onclick = load;
+
+// Heartbeat keeps the server alive; it exits about a minute after the last tab closes.
+setInterval(() => api('POST', '/api/heartbeat').catch(() => toast('การเชื่อมต่อกับ server หลุด — พิมพ์ /cc-inventory:inventory ใน Claude Code เพื่อเปิดใหม่', true)), 15000);
+
+// While Claude is writing explanations, refresh quietly so they appear as they finish.
+let polling = false;
+async function poll(force) {
+  if (polling && !force) return;
+  polling = true;
+  while (S && S.progress.queued + S.progress.running > 0) {
+    await new Promise((r) => setTimeout(r, 3000));
+    try {
+      const next = await api('GET', '/api/state?project=' + encodeURIComponent(project || 'none'));
+      S = next; renderCards(); renderProgress(); renderTabs();
+      if (tab !== 'overlap' && tab !== 'install' && document.activeElement?.tagName !== 'INPUT') renderDetail();
+    } catch { break; }
+  }
+  polling = false;
+}
+load().then(() => poll());
+</script>
+</body>
+</html>

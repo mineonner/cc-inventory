@@ -1,0 +1,23 @@
+{
+  "checkedWithClaudeCode": "2.1.308",
+  "note": "Built-in skills and agents ship inside the Claude Code binary, so no file on disk lists them. Update this list when Claude Code adds or drops one.",
+  "skills": [
+    { "name": "init", "description": "Initialize a new CLAUDE.md file with codebase documentation" },
+    { "name": "simplify", "description": "Review the changed code for reuse, simplification, efficiency, and altitude cleanups, then apply the fixes. Quality only — it does not hunt for bugs." },
+    { "name": "security-review", "description": "Complete a security review of the pending changes on the current branch" },
+    { "name": "loop", "description": "Run a prompt or slash command on a recurring interval, or let the model self-pace." },
+    { "name": "schedule", "description": "Create, update, list, or run scheduled cloud agents (routines) that execute on a cron schedule." },
+    { "name": "claude-api", "description": "Reference for the Claude API / Anthropic SDK — model ids, pricing, params, streaming, tool use, MCP, agents, caching." },
+    { "name": "run", "description": "Launch and drive this project's app to see a change working, or screenshot the app." },
+    { "name": "update-config", "description": "Configure the Claude Code harness via settings.json: hooks, permissions, env vars." },
+    { "name": "keybindings-help", "description": "Customize keyboard shortcuts and chord bindings in ~/.claude/keybindings.json." },
+    { "name": "fewer-permission-prompts", "description": "Scan transcripts for common read-only tool calls and add a prioritized allowlist to project settings." }
+  ],
+  "agents": [
+    { "name": "general-purpose", "description": "General-purpose agent for researching complex questions, searching for code, and executing multi-step tasks." },
+    { "name": "Explore", "description": "Read-only search agent for broad fan-out searches across many files when only the conclusion is needed." },
+    { "name": "Plan", "description": "Software architect agent for designing implementation plans and weighing architectural trade-offs." },
+    { "name": "statusline-setup", "description": "Configure the user's Claude Code status line setting." },
+    { "name": "claude-code-guide", "description": "Answer questions about Claude Code features, hooks, slash commands, MCP servers, settings, the Agent SDK and the Claude API." }
+  ]
+}

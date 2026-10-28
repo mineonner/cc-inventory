@@ -147,12 +147,17 @@ function scanSkillDirs(ctx, root, scope, opts = {}) {
       const file = path.join(dir, 'SKILL.md');
       const text = readText(file);
       if (text == null) {
-        if (isLink && !exists(dir)) addBrokenLink(ctx, dir, d.name, scope, set.status);
+        if (isLink && !targetExists(dir)) addBrokenLink(ctx, dir, d.name, scope, set.status);
         continue;
       }
       addSkillLike(ctx, 'skill', file, text, d.name, scope, { ...opts, status: set.status, dir });
     }
   }
+}
+
+// statSync follows the link; accessSync on Windows can succeed on a junction whose target is gone.
+function targetExists(p) {
+  try { fs.statSync(p); return true; } catch { return false; }
 }
 
 function safeIsLink(p) {

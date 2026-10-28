@@ -180,7 +180,10 @@ test('broken skill links are listed and can only be deleted', async () => {
   fs.symlinkSync(gone, path.join(f.cfg, 'skills-disabled', 'deadlink'), 'junction');
   fs.rmSync(gone, { recursive: true });
   const a = createActions({ env: f.env });
+  const link = path.join(f.cfg, 'skills-disabled', 'deadlink');
   const e = find(scan({ env: f.env }), 'skill:user-disabled:deadlink');
+  const probe = (fn) => { try { return String(fn()); } catch (err) { return err.code; } };
+  assert.ok(e, `broken link not listed; lstat.isSymbolicLink=${probe(() => fs.lstatSync(link).isSymbolicLink())} stat=${probe(() => fs.statSync(link).isDirectory())} dirents=${probe(() => fs.readdirSync(path.dirname(link), { withFileTypes: true }).map((d) => `${d.name}:${d.isDirectory()}/${d.isSymbolicLink()}`).join(','))}`);
   assert.ok(e.warnings[0].includes('ลิงก์เสีย'));
   await assert.rejects(a.enable(e), /ลิงก์เสีย/);
   await a.remove(e);

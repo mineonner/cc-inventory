@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - run: node --test test/
+      - run: node --test
       # Server must start, write its lockfile and stop on its own (no Claude Code needed).
       - name: smoke-start
         shell: bash

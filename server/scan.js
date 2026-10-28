@@ -139,18 +139,24 @@ function scanSkillDirs(ctx, root, scope, opts = {}) {
   if (scope !== 'plugin') sets.push({ dir: path.join(root, 'skills-disabled'), status: 'disabled' });
   for (const set of sets) {
     for (const d of listDir(set.dir)) {
-      if (!d.isDirectory() && !d.isSymbolicLink()) continue;
-      if (d.name === 'synced' && scope !== 'plugin') continue;
       const dir = path.join(set.dir, d.name);
+      // lstat, not the Dirent: Windows junctions don't always report as symlinks there.
+      const isLink = safeIsLink(dir);
+      if (!d.isDirectory() && !isLink) continue;
+      if (d.name === 'synced' && scope !== 'plugin') continue;
       const file = path.join(dir, 'SKILL.md');
       const text = readText(file);
       if (text == null) {
-        if (d.isSymbolicLink() && !exists(dir)) addBrokenLink(ctx, dir, d.name, scope, set.status);
+        if (isLink && !exists(dir)) addBrokenLink(ctx, dir, d.name, scope, set.status);
         continue;
       }
       addSkillLike(ctx, 'skill', file, text, d.name, scope, { ...opts, status: set.status, dir });
     }
   }
+}
+
+function safeIsLink(p) {
+  try { return fs.lstatSync(p).isSymbolicLink(); } catch { return false; }
 }
 
 // A skill symlink whose target is gone: Claude Code can't load it, and it's easy to miss.

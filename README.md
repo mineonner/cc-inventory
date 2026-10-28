@@ -63,7 +63,7 @@ Extension ที่อยู่ใน Plugin, sync มาจาก claude.ai ห
 ## พัฒนา
 
 ```bash
-node --test test/
+node --test
 node server/start.js
 ```
 
